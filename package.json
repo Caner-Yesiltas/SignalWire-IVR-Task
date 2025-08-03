@@ -1,7 +1,18 @@
 {
-  "name": "SignalWire-Task-IVR",
+  "name": "signalwire-ivr-task",
   "version": "1.0.0",
+  "description": "A basic IVR system using SignalWire's realtime voice API.",
   "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "signalwire",
+    "ivr",
+    "voice",
+    "nodejs"
+  ],
+  "author": "Caner Yeşiltaş",
   "license": "MIT",
   "dependencies": {
     "@signalwire/realtime-api": "^4.1.3",
