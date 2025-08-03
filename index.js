@@ -1,8 +1,10 @@
 // Load environment variables from .env file
 require('dotenv').config();
 
-// CORRECT WAY: Import the top-level SignalWire object
 const { SignalWire } = require('@signalwire/realtime-api');
+
+const SUPPORT_NUMBER = process.env.SUPPORT_FORWARDING_NUMBER;
+const SALES_NUMBER = process.env.SALES_FORWARDING_NUMBER;
 
 // Main function to run the application
 async function run() {
@@ -11,13 +13,12 @@ async function run() {
     const client = await SignalWire({
       project: process.env.SIGNALWIRE_PROJECT_ID,
       token: process.env.SIGNALWIRE_AUTH_TOKEN,
-      // Note: The new client doesn't need contexts here, it's defined in the listener
       signalwireSpaceUrl: process.env.SIGNALWIRE_SPACE_URL,
     });
 
     // Listen for incoming calls on a specific topic (context)
     await client.voice.listen({
-      topics: ['caner-ivr-task'], 
+      topics: ['caner-ivr-task'],
       onCallReceived: async (call) => {
         console.log(`Call received from: ${call.from}`);
 
@@ -25,9 +26,29 @@ async function run() {
           await call.answer();
           console.log('Call answered.');
 
+          const prompt = await call.promptTTS({
+            text: 'Thanks for calling XYZ.. press 1 to talk to support, press 2 to talk to sales, or press 3 to record a voicemail.',
+            digits: {
+              max: 1,
+              digitTimeout: 5,
+            },
+          });
+
+          const digit = prompt.digits;
+          console.log(`User pressed: ${digit}`);
+
           // Play the initial greeting as requested in the assignment
-          await call.playTTS({ text: 'Thanks for calling XYZ..' });
-          console.log('Welcome message played.');
+          if (digit === '1') {
+            await call.playTTS({ text: 'Connecting you to support.' });
+            await call.connectPhone({ to: SUPPORT_NUMBER });
+          } else if (digit === '2') {
+            await call.playTTS({ text: 'Connecting you to sales.' });
+            await call.connectPhone({ to: SALES_NUMBER });
+          } else {
+            // For now, any other input gets this message before hanging up.
+            await call.playTTS({ text: 'Invalid selection. Goodbye.' });
+            await call.hangup();
+          }
         } catch (error) {
           console.error('An error occurred during the call:', error);
         } finally {
