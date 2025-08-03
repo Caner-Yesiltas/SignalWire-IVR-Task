@@ -1,4 +1,4 @@
-// Load environment variables from .env file
+
 require('dotenv').config();
 
 const { SignalWire } = require('@signalwire/realtime-api');
@@ -6,7 +6,7 @@ const { SignalWire } = require('@signalwire/realtime-api');
 const SUPPORT_NUMBER = process.env.SUPPORT_FORWARDING_NUMBER;
 const SALES_NUMBER = process.env.SALES_FORWARDING_NUMBER;
 
-// Main function to run the application
+
 async function run() {
   try {
     // Connect to SignalWire using credentials from .env
@@ -21,19 +21,18 @@ async function run() {
       topics: ['caner-ivr-task'],
       onCallReceived: async (call) => {
         console.log(`Call received from: ${call.from}`);
-
         try {
-          await call.answer();
-         
-
-          const prompt = await call.promptTTS({
-            text: 'Thanks for calling XYZ.. press 1 to talk to support, press 2 to talk to sales, or press 3 to record a voicemail.',
-            digits: {
-              max: 1,
-              digitTimeout: 5,
-            },
-          });
-
+          const prompt = await Promise.race([
+            call.promptTTS({
+              text: 'Thanks for calling XYZ.. press 1 to talk to support, press 2 to talk to sales, or press 3 to record a voicemail.',
+              digits: {
+                max: 1,
+              },
+            }),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('timeout')), 13000),
+            ),
+          ]);
           const digit = prompt.digits;
           console.log(`User pressed: ${digit}`);
 
@@ -44,17 +43,21 @@ async function run() {
           } else if (digit === '2') {
             await call.playTTS({ text: 'Connecting you to sales.' });
             await call.connectPhone({ to: SALES_NUMBER });
-           } else if (digit === '3') {
-            await call.playTTS({ text: 'Please leave your message after the beep. Press any key when you are finished.' });
-            
+          } else if (digit === '3') {
+            await call.playTTS({
+              text: 'Please leave your message after the beep. Press any key when you are finished.',
+            });
+
             const recording = await call.record({
               beep: true,
-              terminators: '#*0123456789' 
+              terminators: '#*0123456789',
             });
-            
+
             console.log(`Voicemail recorded. URL: ${recording.url}`);
 
-            await call.playTTS({ text: 'Thank you for your message. Goodbye.' });
+            await call.playTTS({
+              text: 'Thank you for your message. Goodbye.',
+            });
             await call.hangup();
           } else {
             // For now, any other input gets this message before hanging up.
@@ -63,8 +66,14 @@ async function run() {
           }
         } catch (error) {
           console.error('An error occurred during the call:', error);
+
+          if (error.message === 'timeout') {
+            await call.playTTS({ text: 'No input received. Goodbye.' });
+            await call.hangup();
+            return;
+          }
         } finally {
-          // Always hang up the call
+ 
           await call.hangup();
         }
       },
@@ -76,5 +85,5 @@ async function run() {
   }
 }
 
-// Start the application
+
 run();
