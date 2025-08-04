@@ -2,6 +2,10 @@
 
 This project is a basic Interactive Voice Response (IVR) system built with Node.js and the SignalWire Realtime API SDK, as part of a code test.
 
+<div align="center">
+  <img src="/public/SignalWire IVR-Task-Test.gif" alt="SignalWire IVR-Task-Test" width="800"/>
+</div>
+
 ## Features
 
 -   **Handles Inbound Calls:** Actively listens for incoming calls to a designated SignalWire phone number.
