@@ -54,3 +54,8 @@ This project is a basic Interactive Voice Response (IVR) system built with Node.
 3.  Call your designated SignalWire phone number to test the IVR flow.
 
 ---
+
+## Account Requirements
+- **Voicemail recording** requires SignalWire account with recording capabilities
+- **Call forwarding and menu** work on all account types
+- For production deployment, ensure recording features are enabled in your SignalWire dashboard
