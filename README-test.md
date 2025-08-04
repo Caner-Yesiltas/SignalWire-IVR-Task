@@ -4,7 +4,7 @@ This project is a basic Interactive Voice Response (IVR) system built with Node.
 
 
 <div align="center">
-    <img src="./assets/SignalWire IVR-Task-Test.gif" alt="SignalWire IVR-Task-Test" width="800"/>
+    <img src="./assets/demo.gif" alt="SignalWire IVR-Task-Test" width="800"/>
 </div>
 
 ## Features
